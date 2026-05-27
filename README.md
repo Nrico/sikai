@@ -102,10 +102,12 @@ The on-screen pad is rotated 90 degrees counterclockwise from the YAML's normal
 orientation: keys display as a two-row by three-column block, with the knob on
 the right.
 
-Layer 1 is the only practically usable layer at the moment. The tool can write
-mappings for layers 2 and 3, but we do not have a working way to switch this
-`0x8890` 6-key pad into those layers from the device. Until a layer-switch
-mechanism is found, layers 2 and 3 should be treated as inaccessible/experimental.
+Layer 1 is the only layer to edit for practical use. The tool can write mappings
+for layers 2 and 3, but we do not have a working way to intentionally switch
+this `0x8890` 6-key pad into those layers from the device. To avoid a hidden
+hardware layer mismatch, the web editor mirrors Layer 1 across all hardware
+layers in a temporary upload file before programming the pad. The editable
+`sikaicase-starter.yaml` file still keeps separate layers for experiments.
 
 The LED panel is experimental. It stores desired colors per key in the editor
 and sends the best-known `0x8890` LED command. Vendor software names the modes

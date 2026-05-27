@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import subprocess
+from copy import deepcopy
 from datetime import datetime
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
@@ -23,6 +24,7 @@ from macropad import (
 UI_ROOT = ROOT / "ui"
 LED_SETTINGS = ROOT / "led-settings.json"
 UPLOAD_STATUS = ROOT / "upload-status.json"
+UPLOAD_CONFIG = ROOT / ".sikaicase-upload.yaml"
 LED_SENDER = ROOT / "ch57x_send"
 LED_COLOR_CODES = {
     "#ffffff": 0x00,
@@ -87,10 +89,11 @@ class AppHandler(SimpleHTTPRequestHandler):
             )
         if path == "/api/upload":
             address = detect_address()
+            upload_path = self.write_upload_config()
             command = [str(TOOL), "--vendor-id", "0x1189", "--product-id", "0x8890"]
             if address:
                 command.extend(["--address", address])
-            command.extend(["upload", str(DEFAULT_CONFIG)])
+            command.extend(["upload", str(upload_path)])
             result = self.run(command)
             status_data = {
                 "ok": result.returncode == 0,
@@ -98,9 +101,15 @@ class AppHandler(SimpleHTTPRequestHandler):
                 "exitCode": result.returncode,
                 "completedAt": datetime.now().isoformat(timespec="seconds"),
                 "command": " ".join(command),
+                "uploadedFile": str(upload_path),
+                "mirroredLayer": 1,
                 "stdout": result.stdout,
                 "stderr": result.stderr
-                or ("" if address else "USB address was not auto-detected; upload tried without --address."),
+                or (
+                    "Layer 1 was mirrored to all hardware layers for upload."
+                    if address
+                    else "USB address was not auto-detected; upload tried without --address."
+                ),
             }
             UPLOAD_STATUS.write_text(json.dumps(status_data, indent=2) + "\n")
             return self.send_json(
@@ -159,6 +168,15 @@ class AppHandler(SimpleHTTPRequestHandler):
             for knob in layer.get("knobs", []):
                 for direction in ("ccw", "press", "cw"):
                     knob[direction] = normalize_action(str(knob.get(direction, "")))
+
+    def write_upload_config(self):
+        config = load_config(DEFAULT_CONFIG)
+        self.normalize_config(config)
+        if config.layers:
+            live_layer = deepcopy(config.layers[0])
+            config.layers = [deepcopy(live_layer) for _ in config.layers]
+        save_config(config, UPLOAD_CONFIG)
+        return UPLOAD_CONFIG
 
     def actions(self):
         return [

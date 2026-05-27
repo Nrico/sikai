@@ -361,6 +361,8 @@ function appendOutput(data) {
     data.completedAt ? `Completed: ${data.completedAt}` : "",
     data.address ? `USB address: ${data.address}` : "",
     Number.isInteger(data.exitCode) ? `Exit code: ${data.exitCode}` : "",
+    data.mirroredLayer ? `Mirrored layer: ${data.mirroredLayer} to all hardware layers` : "",
+    data.uploadedFile ? `Uploaded file: ${data.uploadedFile}` : "",
     data.command ? `Command: ${data.command}` : "",
     data.stdout,
     data.stderr,
@@ -380,7 +382,8 @@ function renderUploadStatus(data) {
   const status = data.ok ? "Confirmed" : "Failed";
   const address = data.address || "unknown address";
   const time = data.completedAt || "unknown time";
-  el.uploadStatus.textContent = `${status} at ${time} on ${address} (exit ${data.exitCode})`;
+  const mirror = data.mirroredLayer ? `; Layer ${data.mirroredLayer} mirrored to all hardware layers` : "";
+  el.uploadStatus.textContent = `${status} at ${time} on ${address} (exit ${data.exitCode})${mirror}`;
   el.uploadStatus.className = data.ok ? "good" : "bad";
 }
 
