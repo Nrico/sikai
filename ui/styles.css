@@ -1,0 +1,403 @@
+:root {
+  color-scheme: light;
+  --bg: #f4f6f8;
+  --panel: #ffffff;
+  --ink: #17202a;
+  --muted: #5b6673;
+  --line: #d7dde4;
+  --accent: #0f766e;
+  --accent-strong: #0b5e59;
+  --warn: #9a3412;
+  --shadow: 0 18px 45px rgba(23, 32, 42, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  background: var(--bg);
+  font: 15px/1.4 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.shell {
+  width: min(1180px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 24px 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 760;
+  letter-spacing: 0;
+}
+
+#status {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.actions,
+.tabs,
+.preset-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: #9aa7b5;
+}
+
+.actions button {
+  min-width: 86px;
+  padding: 0 16px;
+  font-weight: 700;
+}
+
+#saveButton,
+#uploadButton {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+#saveButton:hover,
+#uploadButton:hover {
+  background: var(--accent-strong);
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(420px, 1fr) 360px;
+  gap: 18px;
+  align-items: start;
+}
+
+.tabs {
+  grid-column: 1 / -1;
+}
+
+.tabs button {
+  width: 112px;
+  font-weight: 700;
+}
+
+.tabs .active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: white;
+}
+
+.device,
+.editor {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.device {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 176px;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.pad-help {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #eef2f5;
+}
+
+.pad-help h2 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.pad-help p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.pad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.key {
+  min-height: 124px;
+  width: 100%;
+  min-width: 0;
+  padding: 14px;
+  text-align: left;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-items: stretch;
+  overflow: visible;
+}
+
+.key small,
+.knob-action span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.key strong,
+.knob-action strong,
+.knob span {
+  align-self: center;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  line-height: 1.15;
+  font-size: clamp(15px, 2vw, 20px);
+  letter-spacing: 0;
+}
+
+.selected {
+  outline: 3px solid rgba(15, 118, 110, 0.25);
+  border-color: var(--accent);
+}
+
+.knob-panel {
+  display: grid;
+  grid-template-rows: 1fr 148px 1fr;
+  gap: 14px;
+  align-items: center;
+  margin-top: 0;
+}
+
+.knob {
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  background: #26313d;
+  color: white;
+  border: 8px solid #111820;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 16px 28px rgba(23, 32, 42, 0.2);
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.knob-action {
+  min-height: 82px;
+  padding: 12px;
+  text-align: left;
+  display: grid;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.editor {
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+input {
+  width: 100%;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--ink);
+  background: white;
+}
+
+select {
+  width: 100%;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+  color: var(--ink);
+  background: white;
+}
+
+input:focus {
+  outline: 3px solid rgba(15, 118, 110, 0.18);
+  border-color: var(--accent);
+}
+
+.preset-grid button {
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.lighting {
+  display: grid;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.upload-status {
+  display: grid;
+  gap: 6px;
+}
+
+#uploadStatus {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #eef2f5;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+#uploadStatus.good {
+  border-color: rgba(15, 118, 110, 0.38);
+  background: rgba(15, 118, 110, 0.08);
+  color: var(--accent-strong);
+}
+
+#uploadStatus.bad {
+  border-color: rgba(154, 52, 18, 0.38);
+  background: rgba(154, 52, 18, 0.08);
+  color: var(--warn);
+}
+
+.lighting-head,
+.two-col {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.lighting-head span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+
+.swatch {
+  min-width: 0;
+  min-height: 30px;
+  border-radius: 999px;
+  background: var(--swatch);
+}
+
+.swatch.active {
+  outline: 3px solid rgba(15, 118, 110, 0.3);
+  border-color: var(--ink);
+}
+
+.two-col > div {
+  flex: 1;
+}
+
+#applyLedButton {
+  width: 86px;
+  font-weight: 700;
+}
+
+pre {
+  min-height: 132px;
+  max-height: 240px;
+  overflow: auto;
+  margin: 0;
+  padding: 12px;
+  color: #24303c;
+  background: #eef2f5;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  white-space: pre-wrap;
+}
+
+.error {
+  color: var(--warn);
+}
+
+@media (max-width: 860px) {
+  .shell {
+    width: min(100vw - 20px, 620px);
+    padding-top: 14px;
+  }
+
+  .topbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .actions button {
+    flex: 1;
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .device {
+    padding: 14px;
+    grid-template-columns: 1fr;
+  }
+
+  .pad-grid,
+  .knob-panel {
+    gap: 10px;
+  }
+
+  .knob-panel {
+    grid-template-columns: 1fr 118px 1fr;
+    grid-template-rows: none;
+  }
+}

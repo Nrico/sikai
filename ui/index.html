@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SikaiCase Editor</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <h1>SikaiCase Editor</h1>
+          <p id="status">Loading mapping...</p>
+        </div>
+        <div class="actions">
+          <button id="validateButton" type="button" title="Validate">Check</button>
+          <button id="saveButton" type="button" title="Save">Save</button>
+          <button id="uploadButton" type="button" title="Upload">Upload</button>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <nav id="layerTabs" class="tabs" aria-label="Layers"></nav>
+
+        <section class="device" aria-label="Macro pad">
+          <div id="padGrid" class="pad-grid"></div>
+          <div class="knob-panel">
+            <button class="knob-action" type="button" data-kind="knob" data-direction="ccw" title="Counterclockwise">
+              <span>CCW</span>
+              <strong id="knob-ccw"></strong>
+            </button>
+            <button class="knob" type="button" data-kind="knob" data-direction="press" title="Press">
+              <span id="knob-press"></span>
+            </button>
+            <button class="knob-action" type="button" data-kind="knob" data-direction="cw" title="Clockwise">
+              <span>CW</span>
+              <strong id="knob-cw"></strong>
+            </button>
+          </div>
+          <section class="pad-help" aria-label="How to use the editor">
+            <h2>How This Works</h2>
+            <p>Select an edit layer, click a key or knob control, then type an action or choose a preset. Save writes the mapping file. Upload sends the saved mapping to the connected keypad.</p>
+            <p>The layer tabs edit the three stored layouts. This 0x8890 pad has not shown us a confirmed assignable layer-switch action, so treat layer 1 as the dependable live layout unless you know the hardware has a physical layer button.</p>
+            <p>After uploading, press the keys on the pad to test them. The Last Upload panel confirms whether the programmer reached the device and exited cleanly.</p>
+          </section>
+        </section>
+
+        <aside class="editor" aria-label="Selected control">
+          <div class="field">
+            <label for="selectedLabel">Control</label>
+            <input id="selectedLabel" type="text" readonly>
+          </div>
+          <div class="field">
+            <label for="actionInput">Action</label>
+            <input id="actionInput" type="text" list="actionList" autocomplete="off" spellcheck="false">
+            <datalist id="actionList"></datalist>
+          </div>
+          <div class="preset-grid" id="presetGrid"></div>
+          <section class="lighting" aria-label="Layer lighting">
+            <div class="lighting-head">
+              <label for="ledMode">Layer Lighting</label>
+              <span>Mode only on 0x8890</span>
+            </div>
+            <div class="swatches" id="colorSwatches"></div>
+            <div class="field two-col">
+              <div>
+                <label for="ledMode">Mode</label>
+                <select id="ledMode">
+                  <option value="0">Off</option>
+                  <option value="1">Steady</option>
+                  <option value="2">Breathe</option>
+                  <option value="3">Reactive</option>
+                  <option value="4">Flash</option>
+                  <option value="5">Cycle</option>
+                </select>
+              </div>
+              <button id="applyLedButton" type="button">Apply</button>
+            </div>
+          </section>
+          <section class="upload-status" aria-label="Upload status">
+            <label>Last Upload</label>
+            <div id="uploadStatus">No upload recorded yet.</div>
+          </section>
+          <pre id="output" aria-live="polite"></pre>
+        </aside>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

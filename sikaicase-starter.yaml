@@ -1,0 +1,32 @@
+orientation: normal
+rows: 3
+columns: 2
+knobs: 1
+
+layers:
+  - buttons:
+      - ["mute", "cmd-x"]
+      - ["volumedown", "cmd-c"]
+      - ["volumeup", "cmd-v"]
+    knobs:
+      - ccw: "volumedown"
+        press: "mute"
+        cw: "volumeup"
+
+  - buttons:
+      - ["f13", "f14"]
+      - ["f15", "f16"]
+      - ["f17", "f18"]
+    knobs:
+      - ccw: "left"
+        press: "enter"
+        cw: "right"
+
+  - buttons:
+      - ["play", "next"]
+      - ["previous", "mute"]
+      - ["macbrightnessdown", "macbrightnessup"]
+    knobs:
+      - ccw: "wheelup"
+        press: "click"
+        cw: "wheeldown"

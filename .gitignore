@@ -1,0 +1,29 @@
+__pycache__/
+*.pyc
+
+# Local editor state
+led-settings.json
+upload-status.json
+*.bak-*
+sikaicase-starter.yaml.bak-*
+
+# Downloaded tools, archives, and extracted vendor software
+ch57x-keyboard-tool
+ch57x-keyboard-tool-*.tar.gz
+ch57x-keyboard-tool-src.tar.gz
+kriomant-ch57x-keyboard-tool-*/
+sikaicase-*.zip
+sikaicase-*.7z
+vendor_*/
+vendor_*.il
+
+# Local probe/reverse-engineering binaries
+ch57x_probe
+ch57x_send
+usb_describe
+usb_list
+ch57x_probe.c
+ch57x_send.c
+usb_describe.c
+usb_list.c
+example-mapping.yaml
