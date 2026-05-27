@@ -43,6 +43,12 @@ select {
   margin-bottom: 16px;
 }
 
+.topbar-right {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+
 h1 {
   margin: 0;
   font-size: 28px;
@@ -61,6 +67,52 @@ h1 {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.device-status {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.device-dot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #94a3b8;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.18);
+}
+
+.device-status.connected {
+  border-color: rgba(15, 118, 110, 0.35);
+  background: rgba(15, 118, 110, 0.08);
+  color: var(--accent-strong);
+}
+
+.device-status.connected .device-dot {
+  background: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.18);
+}
+
+.device-status.disconnected {
+  border-color: rgba(154, 52, 18, 0.35);
+  background: rgba(154, 52, 18, 0.08);
+  color: var(--warn);
+}
+
+.device-status.disconnected .device-dot {
+  background: #c2410c;
+  box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.16);
 }
 
 button {
@@ -400,6 +452,10 @@ pre {
   .topbar {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .topbar-right {
+    justify-items: stretch;
   }
 
   .actions button {

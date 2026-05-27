@@ -38,10 +38,12 @@ const state = {
   led: {},
   layer: 0,
   selected: { kind: "button", row: 0, column: 0 },
+  deviceRefresh: null,
 };
 
 const el = {
   status: document.querySelector("#status"),
+  deviceStatus: document.querySelector("#deviceStatus"),
   layerTabs: document.querySelector("#layerTabs"),
   padGrid: document.querySelector("#padGrid"),
   selectedLabel: document.querySelector("#selectedLabel"),
@@ -73,11 +75,12 @@ async function api(path, options = {}) {
 }
 
 async function load() {
-  const [config, actions, led, uploadStatus] = await Promise.all([
+  const [config, actions, led, uploadStatus, device] = await Promise.all([
     api("/api/config"),
     api("/api/actions"),
     api("/api/led"),
     api("/api/upload-status"),
+    api("/api/device"),
   ]);
   state.config = config;
   state.led = led;
@@ -85,7 +88,9 @@ async function load() {
   renderPresets();
   renderSwatches();
   renderUploadStatus(uploadStatus);
+  renderDeviceStatus(device);
   render();
+  startDeviceRefresh();
   setStatus("Mapping loaded");
 }
 
@@ -257,6 +262,7 @@ async function uploadConfig() {
   const data = await api("/api/upload", { method: "POST", body: "{}" });
   appendOutput(data);
   renderUploadStatus(data);
+  refreshDeviceStatus();
   setStatus(data.address ? `Uploaded to ${data.address}` : "Upload attempted");
 }
 
@@ -272,6 +278,23 @@ async function applyLed() {
   appendOutput(data);
   const encoded = data.encodedMode ? ` (${data.encodedMode})` : "";
   setStatus(data.address ? `LED command sent to ${data.address}${encoded}` : `LED command attempted${encoded}`);
+}
+
+function startDeviceRefresh() {
+  if (state.deviceRefresh) return;
+  state.deviceRefresh = window.setInterval(refreshDeviceStatus, 5000);
+}
+
+async function refreshDeviceStatus() {
+  try {
+    renderDeviceStatus(await api("/api/device"));
+  } catch (error) {
+    renderDeviceStatus({
+      connected: null,
+      address: null,
+      message: "Connection check failed.",
+    });
+  }
 }
 
 function currentLayer() {
@@ -359,6 +382,18 @@ function renderUploadStatus(data) {
   const time = data.completedAt || "unknown time";
   el.uploadStatus.textContent = `${status} at ${time} on ${address} (exit ${data.exitCode})`;
   el.uploadStatus.className = data.ok ? "good" : "bad";
+}
+
+function renderDeviceStatus(data) {
+  const connected = data.connected;
+  const label = connected === true
+    ? `Pad connected${data.address ? `: ${data.address}` : ""}`
+    : connected === false
+      ? "Pad not connected"
+      : "Pad status unknown";
+  el.deviceStatus.className = `device-status ${connected === true ? "connected" : connected === false ? "disconnected" : "unknown"}`;
+  el.deviceStatus.title = data.message || "";
+  el.deviceStatus.querySelector(".device-text").textContent = label;
 }
 
 function setStatus(message) {

@@ -48,6 +48,8 @@ class AppHandler(SimpleHTTPRequestHandler):
             return self.send_json({"actions": self.actions()})
         if path == "/api/led":
             return self.send_json(self.led_settings())
+        if path == "/api/device":
+            return self.send_json(self.device_status())
         if path == "/api/upload-status":
             return self.send_json(self.upload_status())
         if path == "/":
@@ -259,6 +261,26 @@ class AppHandler(SimpleHTTPRequestHandler):
                 "0",
             ]
         return [str(TOOL), "--vendor-id", "0x1189", "--product-id", "0x8890", "led", str(encoded_mode)]
+
+    def device_status(self):
+        address = detect_address()
+        detector_available = (ROOT / "usb_list").exists()
+        connected = bool(address) if detector_available else None
+        if connected:
+            message = f"SikaiCase connected at USB address {address}."
+        elif detector_available:
+            message = "SikaiCase USB device 1189:8890 was not found."
+        else:
+            message = "USB detector helper is not installed, so connection status is unknown."
+        return {
+            "connected": connected,
+            "address": address,
+            "detectorAvailable": detector_available,
+            "vendorId": "0x1189",
+            "productId": "0x8890",
+            "checkedAt": datetime.now().isoformat(timespec="seconds"),
+            "message": message,
+        }
 
     def upload_status(self):
         if UPLOAD_STATUS.exists():

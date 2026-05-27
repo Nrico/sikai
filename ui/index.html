@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SikaiCase Editor</title>
-    <link rel="stylesheet" href="/styles.css?v=20260527-led-key">
+    <link rel="stylesheet" href="/styles.css?v=20260527-device-status">
   </head>
   <body>
     <main class="shell">
@@ -13,10 +13,16 @@
           <h1>SikaiCase Editor</h1>
           <p id="status">Loading mapping...</p>
         </div>
-        <div class="actions">
-          <button id="validateButton" type="button" title="Validate">Check</button>
-          <button id="saveButton" type="button" title="Save">Save</button>
-          <button id="uploadButton" type="button" title="Upload">Upload</button>
+        <div class="topbar-right">
+          <div id="deviceStatus" class="device-status checking" role="status" aria-live="polite">
+            <span class="device-dot"></span>
+            <span class="device-text">Checking pad...</span>
+          </div>
+          <div class="actions">
+            <button id="validateButton" type="button" title="Validate">Check</button>
+            <button id="saveButton" type="button" title="Save">Save</button>
+            <button id="uploadButton" type="button" title="Upload">Upload</button>
+          </div>
         </div>
       </header>
 
@@ -87,6 +93,6 @@
         </aside>
       </section>
     </main>
-    <script src="/app.js?v=20260527-led-key"></script>
+    <script src="/app.js?v=20260527-device-status"></script>
   </body>
 </html>
