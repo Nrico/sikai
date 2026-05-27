@@ -28,6 +28,25 @@ Each 9-byte message is padded with zeros to a 64-byte interrupt OUT transfer.
 
 Modes `0` through `8` were accepted by the device but did not visibly change LEDs on this unit.
 
+## MYKB.app inspection
+
+`/Applications/MYKB.app` was inspected on May 27, 2026. It is a PyInstaller
+Python/Qt app, version `3.0.6`, with bundled modules named like Vial/QMK tooling:
+
+- `protocol.keyboard_comm`
+- `editor.rgb_configurator`
+- `vial_device`
+- `hidproxy`
+
+Its strings and bytecode references include VIA/Vial commands such as
+`CMD_VIA_SET_KEYCODE`, `CMD_VIA_LIGHTING_SET_VALUE`, `VIALRGB_SET_MODE`, and
+serial markers like `vial:f64c2b3c`. I did not find the Sikai/CH57x USB ID
+`1189:8890` or the known `0x8890` packet sequence used by `ch57x-keyboard-tool`.
+
+Conclusion: MYKB appears to target Vial/VIA-compatible QMK devices over raw HID.
+It may be useful background for RGB concepts, but it does not appear to speak
+the CH57x `1189:8890` programming protocol for this pad.
+
 ## Replay utility
 
 Build:
@@ -83,4 +102,3 @@ Export or copy the hex payloads for the packets sent during each LED change.
 Once we have the hex bytes, replay them on macOS with `ch57x_send`.
 If the capture payload is 64 bytes, the first 9 non-zero/meaningful bytes are often the command;
 keep the full grouping when in doubt and test one command group at a time.
-
