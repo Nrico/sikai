@@ -147,24 +147,21 @@ function renderPad() {
   const layer = currentLayer();
   el.padGrid.replaceChildren();
 
-  for (let visualRow = 0; visualRow < state.config.columns; visualRow += 1) {
-    for (let visualColumn = 0; visualColumn < state.config.rows; visualColumn += 1) {
-      const rowIndex = visualColumn;
-      const columnIndex = state.config.columns - 1 - visualRow;
-      const action = layer.buttons[rowIndex][columnIndex];
-      const number = rowIndex * state.config.columns + columnIndex + 1;
-      const button = document.createElement("button");
-      const led = ledForKey(String(number));
-      button.type = "button";
-      button.className = selectedMatches({ kind: "button", row: rowIndex, column: columnIndex }) ? "key selected" : "key";
-      button.dataset.kind = "button";
-      button.dataset.row = rowIndex;
-      button.dataset.column = columnIndex;
-      button.style.setProperty("--led", led.color || "#ffffff");
-      button.innerHTML = `<span class="key-meta"><small>${number}</small><span class="key-led" title="LED preview"></span></span><strong>${escapeHtml(action)}</strong>`;
-      button.addEventListener("click", () => selectButton(rowIndex, columnIndex));
-      el.padGrid.append(button);
-    }
+  for (let number = 1; number <= state.config.rows * state.config.columns; number += 1) {
+    const rowIndex = Math.floor((number - 1) / state.config.columns);
+    const columnIndex = (number - 1) % state.config.columns;
+    const action = layer.buttons[rowIndex][columnIndex];
+    const button = document.createElement("button");
+    const led = ledForKey(String(number));
+    button.type = "button";
+    button.className = selectedMatches({ kind: "button", row: rowIndex, column: columnIndex }) ? "key selected" : "key";
+    button.dataset.kind = "button";
+    button.dataset.row = rowIndex;
+    button.dataset.column = columnIndex;
+    button.style.setProperty("--led", led.color || "#ffffff");
+    button.innerHTML = `<span class="key-meta"><small>${number}</small><span class="key-led" title="LED preview"></span></span><strong>${escapeHtml(action)}</strong>`;
+    button.addEventListener("click", () => selectButton(rowIndex, columnIndex));
+    el.padGrid.append(button);
   }
 
   for (const direction of ["ccw", "press", "cw"]) {
