@@ -69,6 +69,105 @@ Conclusion: MYKB appears to target Vial/VIA-compatible QMK devices over raw HID.
 It may be useful background for RGB concepts, but it does not appear to speak
 the CH57x `1189:8890` programming protocol for this pad.
 
+## Vendor Windows app inspection
+
+`~/Downloads/New English software is set in the upgrade model-20250318` was
+inspected on May 27, 2026. This is a Qt/MinGW Windows app named
+`MINI_KEYBOARD.exe` with `hidapi.dll` and unstripped `.o` object files. The
+object files preserve useful symbols:
+
+```text
+Widget::HID_write()
+Widget::SetRgb_Led_Key(int)
+Widget::Set_Rgb_KeyColor()
+Widget::Read_RgbLed_DataDsp()
+Widget::read_Hidkey_Data(unsigned char, unsigned char, unsigned char)
+Widget::Read_CurKeyBoard_Data()
+Widget::SendLayer(int)
+Widget::Set_Keyboard_6Key()
+Widget::Set_Keyboard_6add1()
+Widget::Set_Keyboard_6add2()
+```
+
+The app includes keyboard profiles such as:
+
+```text
+KB_6key_0VT
+BT_6key_0VT
+KB_6key_2VT
+BT_6key_2VT
+```
+
+It also contains strings for `Layer1`, `Layer2`, `Layer3`, `LED Mode0` through
+`LED Mode5`, `LED_color_1` through `LED_color_56`, `KEY1` through `KEY15`, and
+device status strings like `Device Connect` and `Device Disconnect USB`.
+
+The preserved data section confirms the same LED color-byte pattern we inferred
+earlier. Near the app's LED color table are:
+
+```text
+20 30 40 50 60 70 00 01 02 03 04 05
+```
+
+That matches color high nibbles `0x20..0x70` and mode low nibbles `0..5`.
+
+Important new clue: `SetRgb_Led_Key(int)` writes into the per-key
+`PHY_KEY_Value` table instead of only sending the global mode command. In the
+disassembly it sets a key record to start with bytes equivalent to:
+
+```text
+fe b0 <layer-or-record> <selected-key> ...
+```
+
+and then updates byte `0x0b` of that key record with the encoded LED color/mode
+value. `HID_write()` later walks modified key records and calls `hid_write`
+with length `0x41`, meaning a 65-byte HID report. This suggests the vendor app
+may support per-key LED programming by writing complete key records, not by
+using the shorter `03 b0 18 MODE` command.
+
+`HID_write()` appears to walk three layer-sized blocks of `0x3c` key slots. A
+normal key record stride is `0x41` bytes, and the app writes reports that begin
+with bytes equivalent to:
+
+```text
+03 fe ...
+```
+
+For a different hardware/profile path, it writes a footer-like report beginning:
+
+```text
+03 fd fe ff ...
+```
+
+`read_Hidkey_Data(...)` uses a corresponding read command beginning:
+
+```text
+03 fa ...
+```
+
+That read path copies returned 64-byte reports back into the same
+`PHY_KEY_Value` table. So the vendor protocol likely has a richer read/write
+configuration path than the shorter LED mode command we tested earlier.
+
+The profile selector function `Set_Keyboard_Ver_SLOT(int)` sends a 65-byte HID
+report beginning with:
+
+```text
+03 fc fc ...
+```
+
+and writes a profile code at bytes `3..4`. The cases include codes such as
+`0x0006` for `6KEY`, `0x0106` for `6+1KEY`, and `0x0206` for `6+2KEY`. After a
+successful profile write, the app calls `SetRgb_Led_Key(0x5e)`,
+`SetRgb_Led_Key(0x57)`, then `HID_write()`, which looks like an automatic
+default LED/key-record refresh after switching keyboard model.
+
+The global app data also contains VID/PID values for the keyboard family. The
+default PID symbol in this build points at `0x8840`, while the product-family
+table includes several `0x88xx` PIDs and VID `0x1189`. Our pad remains
+`1189:8890`, so the app likely chooses a profile/PID at runtime rather than
+hardcoding a single product ID.
+
 ## Replay utility
 
 Build:
