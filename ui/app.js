@@ -51,6 +51,7 @@ const el = {
   output: document.querySelector("#output"),
   uploadStatus: document.querySelector("#uploadStatus"),
   colorSwatches: document.querySelector("#colorSwatches"),
+  ledTarget: document.querySelector("#ledTarget"),
   ledMode: document.querySelector("#ledMode"),
   applyLedButton: document.querySelector("#applyLedButton"),
   saveButton: document.querySelector("#saveButton"),
@@ -148,12 +149,14 @@ function renderPad() {
       const action = layer.buttons[rowIndex][columnIndex];
       const number = rowIndex * state.config.columns + columnIndex + 1;
       const button = document.createElement("button");
+      const led = ledForKey(String(number));
       button.type = "button";
       button.className = selectedMatches({ kind: "button", row: rowIndex, column: columnIndex }) ? "key selected" : "key";
       button.dataset.kind = "button";
       button.dataset.row = rowIndex;
       button.dataset.column = columnIndex;
-      button.innerHTML = `<small>${number}</small><strong>${escapeHtml(action)}</strong>`;
+      button.style.setProperty("--led", led.color || "#ffffff");
+      button.innerHTML = `<span class="key-meta"><small>${number}</small><span class="key-led" title="LED preview"></span></span><strong>${escapeHtml(action)}</strong>`;
       button.addEventListener("click", () => selectButton(rowIndex, columnIndex));
       el.padGrid.append(button);
     }
@@ -187,8 +190,9 @@ function renderSwatches() {
       button.title = color;
       button.addEventListener("click", () => {
         currentLed().color = color;
+        renderPad();
         renderLighting();
-        setStatus("Lighting color saved in editor");
+        setStatus("LED color selected");
       });
       return button;
     }),
@@ -198,8 +202,9 @@ function renderSwatches() {
 function renderLighting() {
   const led = currentLed();
   el.ledMode.value = String(led.mode ?? 1);
+  el.ledTarget.textContent = ledTargetName();
   document.querySelectorAll(".swatch").forEach((swatch) => {
-    swatch.classList.toggle("active", swatch.title.toLowerCase() === led.color.toLowerCase());
+    swatch.classList.toggle("active", swatch.title.toLowerCase() === (led.color || "#ffffff").toLowerCase());
   });
 }
 
@@ -260,11 +265,13 @@ async function applyLed() {
   led.mode = Number(el.ledMode.value);
   const data = await api("/api/led", {
     method: "POST",
-    body: JSON.stringify({ layer: state.layer + 1, mode: led.mode, color: led.color }),
+    body: JSON.stringify({ layer: state.layer + 1, key: currentLedKey(), mode: led.mode, color: led.color }),
   });
   state.led = data.settings;
+  render();
   appendOutput(data);
-  setStatus(data.address ? `LED mode sent to ${data.address}` : "LED mode attempted");
+  const encoded = data.encodedMode ? ` (${data.encodedMode})` : "";
+  setStatus(data.address ? `LED command sent to ${data.address}${encoded}` : `LED command attempted${encoded}`);
 }
 
 function currentLayer() {
@@ -272,11 +279,36 @@ function currentLayer() {
 }
 
 function currentLed() {
-  const key = String(state.layer + 1);
-  if (!state.led[key]) {
-    state.led[key] = { mode: 1, color: "#ffffff" };
+  const layerKey = String(state.layer + 1);
+  const key = currentLedKey();
+  if (!state.led[layerKey]) {
+    state.led[layerKey] = { keys: {} };
   }
-  return state.led[key];
+  if (!state.led[layerKey].keys) {
+    state.led[layerKey] = { keys: { all: state.led[layerKey] } };
+  }
+  if (!state.led[layerKey].keys[key]) {
+    const fallback = state.led[layerKey].keys.all || { mode: 1, color: "#ffffff" };
+    state.led[layerKey].keys[key] = { ...fallback };
+  }
+  return state.led[layerKey].keys[key];
+}
+
+function ledForKey(key) {
+  const layerKey = String(state.layer + 1);
+  const layer = state.led[layerKey] || {};
+  const keys = layer.keys || {};
+  return keys[key] || keys.all || { mode: 1, color: "#ffffff" };
+}
+
+function currentLedKey() {
+  if (state.selected.kind !== "button") return "all";
+  return String(state.selected.row * state.config.columns + state.selected.column + 1);
+}
+
+function ledTargetName() {
+  const key = currentLedKey();
+  return key === "all" ? "All keys" : `Key ${key}`;
 }
 
 function getSelectedValue() {

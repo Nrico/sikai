@@ -172,6 +172,22 @@ button:hover {
   overflow: visible;
 }
 
+.key-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.key-led {
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(23, 32, 42, 0.28);
+  border-radius: 999px;
+  background: var(--led);
+  box-shadow: 0 0 0 3px rgba(23, 32, 42, 0.05);
+}
+
 .key small,
 .knob-action span {
   color: var(--muted);
@@ -321,6 +337,7 @@ input:focus {
 .lighting-head span {
   color: var(--muted);
   font-size: 12px;
+  font-weight: 700;
 }
 
 .swatches {
@@ -348,6 +365,13 @@ input:focus {
 #applyLedButton {
   width: 86px;
   font-weight: 700;
+}
+
+.lighting-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 pre {

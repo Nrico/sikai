@@ -23,6 +23,17 @@ from macropad import (
 UI_ROOT = ROOT / "ui"
 LED_SETTINGS = ROOT / "led-settings.json"
 UPLOAD_STATUS = ROOT / "upload-status.json"
+LED_SENDER = ROOT / "ch57x_send"
+LED_COLOR_CODES = {
+    "#ffffff": 0x00,
+    "#ef4444": 0x10,
+    "#f97316": 0x20,
+    "#eab308": 0x30,
+    "#22c55e": 0x40,
+    "#06b6d4": 0x50,
+    "#3b82f6": 0x60,
+    "#8b5cf6": 0x70,
+}
 
 
 class AppHandler(SimpleHTTPRequestHandler):
@@ -100,23 +111,27 @@ class AppHandler(SimpleHTTPRequestHandler):
             layer = int(data.get("layer", 1))
             mode = int(data.get("mode", 1))
             color = str(data.get("color", "#ffffff"))
-            settings[str(layer)] = {"mode": mode, "color": color}
+            key = str(data.get("key", "all"))
+            if str(layer) not in settings:
+                settings[str(layer)] = {"keys": {}}
+            settings[str(layer)].setdefault("keys", {})
+            settings[str(layer)]["keys"][key] = {"mode": mode, "color": color}
             LED_SETTINGS.write_text(json.dumps(settings, indent=2) + "\n")
 
-            address = detect_address()
-            command = [str(TOOL), "--vendor-id", "0x1189", "--product-id", "0x8890"]
-            if address:
-                command.extend(["--address", address])
-            command.extend(["led", str(mode)])
+            color_code = LED_COLOR_CODES.get(color.lower(), 0)
+            encoded_mode = (color_code | (mode & 0x0F)) & 0xFF
+            command = self.led_command(encoded_mode)
             result = self.run(command)
             return self.send_json(
                 {
                     "ok": result.returncode == 0,
-                    "address": address,
+                    "address": detect_address(),
+                    "command": " ".join(command),
+                    "encodedMode": f"0x{encoded_mode:02x}",
                     "settings": settings,
                     "stdout": result.stdout,
                     "stderr": result.stderr
-                    or "0x8890 exposes LED mode numbers only; selected colors are saved in the editor but may not be supported by the pad.",
+                    or "Experimental LED write sent. Mode 1 is the main on/steady test; per-key addressing is not confirmed on this pad.",
                 },
                 status=200 if result.returncode == 0 else 500,
             )
@@ -195,12 +210,55 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def led_settings(self):
         if LED_SETTINGS.exists():
-            return json.loads(LED_SETTINGS.read_text())
+            return self.normalize_led_settings(json.loads(LED_SETTINGS.read_text()))
         return {
-            "1": {"mode": 1, "color": "#ffffff"},
-            "2": {"mode": 2, "color": "#14b8a6"},
-            "3": {"mode": 5, "color": "#6366f1"},
+            "1": {"keys": {"all": {"mode": 1, "color": "#ffffff"}}},
+            "2": {"keys": {"all": {"mode": 1, "color": "#14b8a6"}}},
+            "3": {"keys": {"all": {"mode": 1, "color": "#6366f1"}}},
         }
+
+    def normalize_led_settings(self, settings):
+        normalized = {}
+        for layer, value in settings.items():
+            if "keys" in value:
+                normalized[layer] = value
+            else:
+                normalized[layer] = {"keys": {"all": value}}
+        return normalized
+
+    def led_command(self, encoded_mode):
+        if LED_SENDER.exists():
+            return [
+                str(LED_SENDER),
+                "0x03",
+                "0xa1",
+                "0x01",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0x03",
+                "0xb0",
+                "0x18",
+                f"0x{encoded_mode:02x}",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0x03",
+                "0xaa",
+                "0xa1",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+            ]
+        return [str(TOOL), "--vendor-id", "0x1189", "--product-id", "0x8890", "led", str(encoded_mode)]
 
     def upload_status(self):
         if UPLOAD_STATUS.exists():

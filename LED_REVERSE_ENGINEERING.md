@@ -27,6 +27,28 @@ For `0x8890`, its known LED command is:
 Each 9-byte message is padded with zeros to a 64-byte interrupt OUT transfer.
 
 Modes `0` through `8` were accepted by the device but did not visibly change LEDs on this unit.
+The vendor 6-key software labels these as `LED_Mode0`, `LED_Mode1`,
+`LED_Mode2`, and so on. Based on the app's IL, `LED_Mode0` appears to be off
+and `LED_Mode1` is the primary on/steady mode to test.
+
+The same app appears to encode color in the high nibble of the mode byte:
+
+```text
+white/default 0x00
+red           0x10
+orange        0x20
+yellow        0x30
+green         0x40
+cyan          0x50
+blue          0x60
+purple        0x70
+```
+
+That means red + `LED_Mode1` becomes `0x11`, blue + `LED_Mode1` becomes
+`0x61`, and so on. The web editor sends this encoded byte now. Per-key LED
+addressing is still unconfirmed; the packet shape we know for `1189:8890`
+contains only `b0 18 MODE`, so the physical device may treat the command as
+global even when the editor records a selected key.
 
 ## MYKB.app inspection
 
@@ -61,6 +83,15 @@ Replay the known LED mode `1` packet:
 ./ch57x_send \
   0x03 0xa1 0x01 0 0 0 0 0 0 \
   0x03 0xb0 0x18 0x01 0 0 0 0 0 \
+  0x03 0xaa 0xa1 0 0 0 0 0 0
+```
+
+Replay `LED_Mode1` red:
+
+```sh
+./ch57x_send \
+  0x03 0xa1 0x01 0 0 0 0 0 0 \
+  0x03 0xb0 0x18 0x11 0 0 0 0 0 \
   0x03 0xaa 0xa1 0 0 0 0 0 0
 ```
 

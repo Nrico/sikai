@@ -107,10 +107,15 @@ mappings for layers 2 and 3, but we do not have a working way to switch this
 `0x8890` 6-key pad into those layers from the device. Until a layer-switch
 mechanism is found, layers 2 and 3 should be treated as inaccessible/experimental.
 
-The lighting panel stores a desired color per layer in the editor and can send
-the `0x8890` LED mode command. This hardware/tool path exposes mode numbers
-only, so colors may be visual notes unless we later find a working color
-protocol for this exact pad.
+The LED panel is experimental. It stores desired colors per key in the editor
+and sends the best-known `0x8890` LED command. Vendor software names the modes
+`LED_Mode0`, `LED_Mode1`, and so on; `LED_Mode0` appears to mean off, and
+`LED_Mode1` is the main on/steady test. The color is encoded into the same mode
+byte, for example Mode1 red is `0x11` and Mode1 blue is `0x61`.
+
+Per-key LED targeting is not confirmed. The editor lets you choose a selected
+key so we can test that idea, but the known USB packet still looks like a
+global LED mode write for this exact `0x8890` pad.
 
 ## Macro helper
 
@@ -196,8 +201,11 @@ Known-good write test:
 ./ch57x-keyboard-tool --vendor-id 0x1189 --product-id 0x8890 --address 1:3 upload sikaicase-starter.yaml
 ```
 
-LED modes `1` through `5` were sent successfully. The tool accepts a mode number for this `0x8890`
-device, but does not expose per-key RGB color arguments for this model.
+LED modes `1` through `5` were sent successfully. The vendor 6-key software
+suggests that the high nibble selects a color and the low nibble selects the
+mode: red `0x10`, orange `0x20`, yellow `0x30`, green `0x40`, cyan `0x50`,
+blue `0x60`, purple `0x70`; then add `0x01` for `LED_Mode1`. The web editor now
+uses that encoding when sending LED experiments.
 
 For LED reverse engineering notes and packet replay, see `LED_REVERSE_ENGINEERING.md`.
 

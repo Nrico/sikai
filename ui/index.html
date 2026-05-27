@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SikaiCase Editor</title>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/styles.css?v=20260527-led-key">
   </head>
   <body>
     <main class="shell">
@@ -57,26 +57,27 @@
             <datalist id="actionList"></datalist>
           </div>
           <div class="preset-grid" id="presetGrid"></div>
-          <section class="lighting" aria-label="Layer lighting">
+          <section class="lighting" aria-label="Key LED experiment">
             <div class="lighting-head">
-              <label for="ledMode">Layer Lighting</label>
-              <span>Mode only on 0x8890</span>
+              <label for="ledMode">Key LED Experiment</label>
+              <span id="ledTarget">All keys</span>
             </div>
             <div class="swatches" id="colorSwatches"></div>
             <div class="field two-col">
               <div>
                 <label for="ledMode">Mode</label>
                 <select id="ledMode">
-                  <option value="0">Off</option>
-                  <option value="1">Steady</option>
-                  <option value="2">Breathe</option>
-                  <option value="3">Reactive</option>
-                  <option value="4">Flash</option>
-                  <option value="5">Cycle</option>
+                  <option value="0">LED_Mode0 - Off</option>
+                  <option value="1">LED_Mode1 - On</option>
+                  <option value="2">LED_Mode2 - Effect</option>
+                  <option value="3">LED_Mode3 - Effect</option>
+                  <option value="4">LED_Mode4 - Effect</option>
+                  <option value="5">LED_Mode5 - Effect</option>
                 </select>
               </div>
               <button id="applyLedButton" type="button">Apply</button>
             </div>
+            <p class="lighting-note">Mode1 is the main test. The editor records per-key choices, but the known 0x8890 USB command may still affect all LEDs at once.</p>
           </section>
           <section class="upload-status" aria-label="Upload status">
             <label>Last Upload</label>
@@ -86,6 +87,6 @@
         </aside>
       </section>
     </main>
-    <script src="/app.js"></script>
+    <script src="/app.js?v=20260527-led-key"></script>
   </body>
 </html>
