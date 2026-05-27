@@ -102,11 +102,10 @@ The on-screen pad is rotated 90 degrees counterclockwise from the YAML's normal
 orientation: keys display as a two-row by three-column block, with the knob on
 the right.
 
-The layer tabs in the editor choose which stored layer you are editing. The
-current programmer action list does not expose a key action that switches layers
-at runtime on the `0x8890` 6-key pad. Until a hardware layer button or protocol
-command is confirmed, layer 1 is the dependable live layout and layers 2/3 are
-best treated as saved alternates.
+Layer 1 is the only practically usable layer at the moment. The tool can write
+mappings for layers 2 and 3, but we do not have a working way to switch this
+`0x8890` 6-key pad into those layers from the device. Until a layer-switch
+mechanism is found, layers 2 and 3 should be treated as inaccessible/experimental.
 
 The lighting panel stores a desired color per layer in the editor and can send
 the `0x8890` LED mode command. This hardware/tool path exposes mode numbers
