@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SikaiCase Editor</title>
-    <link rel="stylesheet" href="/styles.css?v=20260527-key-order">
+    <link rel="stylesheet" href="/styles.css?v=20260527-led-vendor">
   </head>
   <body>
     <main class="shell">
@@ -69,6 +69,13 @@
               <span id="ledTarget">All keys</span>
             </div>
             <div class="swatches" id="colorSwatches"></div>
+            <div class="field">
+              <label for="ledProtocol">Protocol</label>
+              <select id="ledProtocol">
+                <option value="vendor">Vendor key record</option>
+                <option value="global">Global mode packet</option>
+              </select>
+            </div>
             <div class="field two-col">
               <div>
                 <label for="ledMode">Mode</label>
@@ -83,7 +90,7 @@
               </div>
               <button id="applyLedButton" type="button">Apply</button>
             </div>
-            <p class="lighting-note">Mode1 is the main test. The editor records per-key choices, but the known 0x8890 USB command may still affect all LEDs at once.</p>
+            <p class="lighting-note">Mode1 is the main on/steady test. Vendor key record uses the PC software packet shape for the selected key. Global mode packet is the older 0x8890 command that may affect all LEDs at once.</p>
           </section>
           <section class="upload-status" aria-label="Upload status">
             <label>Last Upload</label>
@@ -93,6 +100,6 @@
         </aside>
       </section>
     </main>
-    <script src="/app.js?v=20260527-key-order"></script>
+    <script src="/app.js?v=20260527-led-vendor"></script>
   </body>
 </html>

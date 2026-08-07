@@ -26,6 +26,7 @@ LED_SETTINGS = ROOT / "led-settings.json"
 UPLOAD_STATUS = ROOT / "upload-status.json"
 UPLOAD_CONFIG = ROOT / ".sikaicase-upload.yaml"
 LED_SENDER = ROOT / "ch57x_send"
+LED_RAW_SENDER = ROOT / "ch57x_raw_send"
 LED_COLOR_CODES = {
     "#ffffff": 0x00,
     "#ef4444": 0x10,
@@ -123,6 +124,7 @@ class AppHandler(SimpleHTTPRequestHandler):
             mode = int(data.get("mode", 1))
             color = str(data.get("color", "#ffffff"))
             key = str(data.get("key", "all"))
+            protocol = str(data.get("protocol", "vendor")).lower()
             if str(layer) not in settings:
                 settings[str(layer)] = {"keys": {}}
             settings[str(layer)].setdefault("keys", {})
@@ -131,20 +133,25 @@ class AppHandler(SimpleHTTPRequestHandler):
 
             color_code = LED_COLOR_CODES.get(color.lower(), 0)
             encoded_mode = (color_code | (mode & 0x0F)) & 0xFF
-            command = self.led_command(encoded_mode)
-            result = self.run(command)
+            commands = self.led_commands(protocol, layer, key, encoded_mode)
+            results = [self.run(command) for command in commands]
+            result = results[-1] if results else self.empty_result(2, "No LED command was generated.")
+            ok = bool(commands) and all(item.returncode == 0 for item in results)
             return self.send_json(
                 {
-                    "ok": result.returncode == 0,
+                    "ok": ok,
                     "address": detect_address(),
-                    "command": " ".join(command),
+                    "protocol": protocol,
+                    "command": " && ".join(" ".join(command) for command in commands),
+                    "reportCount": len(commands),
+                    "reports": [command[-64:] for command in commands if command and command[0] == str(LED_RAW_SENDER)],
                     "encodedMode": f"0x{encoded_mode:02x}",
                     "settings": settings,
-                    "stdout": result.stdout,
-                    "stderr": result.stderr
-                    or "Experimental LED write sent. Mode 1 is the main on/steady test; per-key addressing is not confirmed on this pad.",
+                    "stdout": "\n".join(item.stdout for item in results if item.stdout),
+                    "stderr": "\n".join(item.stderr for item in results if item.stderr)
+                    or self.led_status_message(protocol, key),
                 },
-                status=200 if result.returncode == 0 else 500,
+                status=200 if ok else 500,
             )
         self.send_error(404)
 
@@ -246,7 +253,12 @@ class AppHandler(SimpleHTTPRequestHandler):
                 normalized[layer] = {"keys": {"all": value}}
         return normalized
 
-    def led_command(self, encoded_mode):
+    def led_commands(self, protocol, layer, key, encoded_mode):
+        if protocol == "global":
+            return [self.global_led_command(encoded_mode)]
+        return self.vendor_led_commands(layer, key, encoded_mode)
+
+    def global_led_command(self, encoded_mode):
         if LED_SENDER.exists():
             return [
                 str(LED_SENDER),
@@ -279,6 +291,65 @@ class AppHandler(SimpleHTTPRequestHandler):
                 "0",
             ]
         return [str(TOOL), "--vendor-id", "0x1189", "--product-id", "0x8890", "led", str(encoded_mode)]
+
+    def vendor_led_commands(self, layer, key, encoded_mode):
+        if not LED_RAW_SENDER.exists():
+            return [self.global_led_command(encoded_mode)]
+
+        config = load_config(DEFAULT_CONFIG)
+        key_numbers = range(1, config.rows * config.columns + 1) if key == "all" else [int(key)]
+        commands = []
+        for key_number in key_numbers:
+            report = self.vendor_led_report(layer, key_number, encoded_mode)
+            commands.append([str(LED_RAW_SENDER), *[f"0x{byte:02x}" for byte in report]])
+        commands.extend(
+            [str(LED_RAW_SENDER), *[f"0x{byte:02x}" for byte in self.vendor_led_commit_report(layer_index)]]
+            for layer_index in range(3)
+        )
+        return commands
+
+    def vendor_led_report(self, layer, key_number, encoded_mode):
+        report = [0] * 64
+        # Vendor Windows app shape: report ID 0x03 followed by a per-key record
+        # beginning fe b0. Byte 0x0b within that record stores color|LED_Mode.
+        record = [
+            0xFE,
+            0xB0,
+            max(1, min(int(layer), 3)),
+            max(1, min(int(key_number), 15)),
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x01,
+            0x00,
+            encoded_mode,
+        ]
+        report[0] = 0x03
+        report[1 : 1 + len(record)] = record
+        return report
+
+    def vendor_led_commit_report(self, layer_index):
+        report = [0] * 64
+        report[0] = 0x03
+        report[1] = 0xFE
+        report[2] = 0xB0
+        report[3] = max(0, min(int(layer_index), 2))
+        report[5] = 0x01
+        return report
+
+    def led_status_message(self, protocol, key):
+        if protocol == "global":
+            return "Global LED mode packet sent. This was the older 0x8890 path and may affect all LEDs at once."
+        target = "all keys" if key == "all" else f"key {key}"
+        return (
+            f"Vendor-style per-key LED record sent for {target}. "
+            "This follows the PC software packet shape; if a mapping changes, click Upload to restore the saved layout."
+        )
+
+    def empty_result(self, code, stderr):
+        return subprocess.CompletedProcess(args=[], returncode=code, stdout="", stderr=stderr)
 
     def device_status(self):
         address = detect_address()

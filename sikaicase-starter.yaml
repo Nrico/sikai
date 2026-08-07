@@ -5,9 +5,9 @@ knobs: 1
 
 layers:
   - buttons:
-      - ["mute", "cmd-x"]
-      - ["volumedown", "cmd-c"]
-      - ["volumeup", "cmd-v"]
+      - ["mute", "volumedown"]
+      - ["volumeup", "cmd-c"]
+      - ["cmd-x", "cmd-v"]
     knobs:
       - ccw: "volumedown"
         press: "mute"

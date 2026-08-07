@@ -20,6 +20,7 @@ vendor_*.il
 
 # Local probe/reverse-engineering binaries
 ch57x_probe
+ch57x_raw_send
 ch57x_send
 usb_describe
 usb_list

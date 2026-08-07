@@ -54,6 +54,7 @@ const el = {
   uploadStatus: document.querySelector("#uploadStatus"),
   colorSwatches: document.querySelector("#colorSwatches"),
   ledTarget: document.querySelector("#ledTarget"),
+  ledProtocol: document.querySelector("#ledProtocol"),
   ledMode: document.querySelector("#ledMode"),
   applyLedButton: document.querySelector("#applyLedButton"),
   saveButton: document.querySelector("#saveButton"),
@@ -268,7 +269,13 @@ async function applyLed() {
   led.mode = Number(el.ledMode.value);
   const data = await api("/api/led", {
     method: "POST",
-    body: JSON.stringify({ layer: state.layer + 1, key: currentLedKey(), mode: led.mode, color: led.color }),
+    body: JSON.stringify({
+      layer: state.layer + 1,
+      key: currentLedKey(),
+      mode: led.mode,
+      color: led.color,
+      protocol: el.ledProtocol.value,
+    }),
   });
   state.led = data.settings;
   render();
@@ -360,6 +367,9 @@ function appendOutput(data) {
     Number.isInteger(data.exitCode) ? `Exit code: ${data.exitCode}` : "",
     data.mirroredLayer ? `Mirrored layer: ${data.mirroredLayer} to all hardware layers` : "",
     data.uploadedFile ? `Uploaded file: ${data.uploadedFile}` : "",
+    data.protocol ? `LED protocol: ${data.protocol}` : "",
+    data.reportCount ? `LED reports: ${data.reportCount}` : "",
+    data.encodedMode ? `LED encoded mode: ${data.encodedMode}` : "",
     data.command ? `Command: ${data.command}` : "",
     data.stdout,
     data.stderr,
