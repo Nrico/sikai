@@ -217,3 +217,6 @@ Justin Howell's `sikaicase-tool` confirms this model's protocol details and
 uses a convenient CLI style that inspired the `batch` command here:
 
 https://github.com/justinrhowell/sikaicase-tool
+
+---
+More projects at [enricolorenzo.com](https://enricolorenzo.com) · art at [enricotrujillo.com](https://enricotrujillo.com)
